@@ -1,0 +1,116 @@
+Sub fetchSalesData()
+Dim strTargetFile As String
+Dim wb As Workbook
+
+     Application.ScreenUpdating = False
+     Application.DisplayAlerts = False
+     strTargetFile = "C:\Users\Asif\Desktop\01-07-21\SALES_DATA\sales_fmtp.xml"
+     Set wb = Workbooks.OpenXML(Filename:=strTargetFile, LoadOption:=xlXmlLoadImportToList)
+     Application.DisplayAlerts = True
+
+     wb.Sheets(1).UsedRange.Copy ThisWorkbook.Sheets("sales_data").Range("A1")
+     wb.Close False
+     Application.ScreenUpdating = True
+
+
+End Sub
+
+
+Sub fetchYesterdayData()
+Dim strTargetFile As String
+Dim wb As Workbook
+
+     Application.ScreenUpdating = False
+     Application.DisplayAlerts = False
+     strTargetFile = "C:\Users\Asif\Desktop\01-07-21\SALES_DATA\yesterday.xml"
+     Set wb = Workbooks.OpenXML(Filename:=strTargetFile, LoadOption:=xlXmlLoadImportToList)
+     Application.DisplayAlerts = True
+
+     wb.Sheets(1).UsedRange.Copy ThisWorkbook.Sheets("yesterday").Range("A1")
+     wb.Close False
+     Application.ScreenUpdating = True
+
+
+End Sub
+
+Sub fetchCODSales()
+Dim strTargetFile As String
+Dim wb As Workbook
+
+     Application.ScreenUpdating = False
+     Application.DisplayAlerts = False
+     strTargetFile = "C:\Users\Asif\Desktop\01-07-21\SALES_DATA\17.xml"
+     Set wb = Workbooks.OpenXML(Filename:=strTargetFile, LoadOption:=xlXmlLoadImportToList)
+     Application.DisplayAlerts = True
+
+     wb.Sheets(1).UsedRange.Copy ThisWorkbook.Sheets("cod").Range("A1")
+     wb.Close False
+     Application.ScreenUpdating = True
+
+
+End Sub
+
+Sub ImportSalesFile()
+    Dim FileToOpen As Variant
+    Dim OpenBook As Workbook
+    Dim StartSheet As Worksheet
+    Set StartSheet = ActiveSheet
+    Application.ScreenUpdating = False
+    FileToOpen = Application.GetOpenFilename(Title:="Browse for your File & Import Range", fileFilter:="Excel Files (*.txt*),*txt*")
+    If FileToOpen <> False Then
+        Set OpenBook = Application.Workbooks.Open(FileToOpen)
+        OpenBook.Sheets(1).Range("A1:Z200").Copy
+        ThisWorkbook.Worksheets("sales").Range("A1").PasteSpecial xlPasteValues
+        OpenBook.Close False
+        StartSheet.Activate
+    End If
+    Application.ScreenUpdating = True
+    
+End Sub
+
+
+Sub ImportStockFile()
+    Dim FileToOpen As Variant
+    Dim OpenBook As Workbook
+    Dim StartSheet As Worksheet
+    Set StartSheet = ActiveSheet
+    Application.ScreenUpdating = False
+    FileToOpen = Application.GetOpenFilename(Title:="Browse for your File & Import Range", fileFilter:="Excel Files (*.txt*),*txt*")
+    If FileToOpen <> False Then
+        Set OpenBook = Application.Workbooks.Open(FileToOpen)
+        OpenBook.Sheets(1).Range("A1:Z450").Copy
+        ThisWorkbook.Worksheets("stock").Range("A1").PasteSpecial xlPasteValues
+        OpenBook.Close False
+        
+    End If
+    Application.ScreenUpdating = True
+    StartSheet.Activate
+End Sub
+
+
+Sub ImportZMwiseProductSales()
+    Dim FileToOpen As Variant
+    Dim OpenBook As Workbook
+    Dim StartSheet As Worksheet
+    Set StartSheet = ActiveSheet
+    Application.ScreenUpdating = False
+    FileToOpen = Application.GetOpenFilename(Title:="Browse for your File & Import Range", fileFilter:="Excel Files (*.xlsx*),*xlsx")
+    If FileToOpen <> False Then
+        Set OpenBook = Application.Workbooks.Open(FileToOpen)
+        OpenBook.Sheets(1).Range("A1:AZ450").Copy
+        ThisWorkbook.Worksheets("zm_wise_product_sales").Range("A1").PasteSpecial xlPasteValues
+        OpenBook.Close False
+        
+    End If
+    Application.ScreenUpdating = True
+    StartSheet.Activate
+End Sub
+
+
+Sub saveAsXlsx()
+    ThisWorkbook.Sheets.Copy
+    Application.DisplayAlerts = False
+    ActiveWorkbook.SaveAs ThisWorkbook.Path & "\" & " " & "Sales Data - " & Format(Date, "mm.dd.yyyy") & ".xlsx", FileFormat:=51
+    ActiveWorkbook.Close
+End Sub
+
