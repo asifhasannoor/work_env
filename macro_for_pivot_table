@@ -1,0 +1,46 @@
+Sub createCODpivotTable()
+'
+' createCODpivotTable Macro
+'
+' Keyboard Shortcut: Ctrl+Shift+C
+'
+    lr = Cells(Rows.Count, 1).End(xlUp).Row
+    lc = Cells(1, Columns.Count).End(xlToLeft).Column
+
+    If lr < 2 Or lc < 6 Then
+        MsgBox "Must have data for a Pivot Table"
+        Exit Sub
+    End If
+
+    dataWS = ActiveSheet.Name
+    Sheets.Add
+    pivotWS = ActiveSheet.Name
+        
+    ActiveWorkbook.PivotCaches.Create(SourceType:=xlDatabase, SourceData:= _
+        "'" & dataWS & "'!A1:V" & lr, Version:=6).CreatePivotTable TableDestination:=pivotWS & "!R3C1", _
+        TableName:="PivotTable2", DefaultVersion:=6
+    Sheets(pivotWS).Select
+    Cells(3, 1).Select
+    With ActiveSheet.PivotTables("PivotTable2").PivotFields("B_CODE")
+        .Orientation = xlColumnField
+        .Position = 1
+    End With
+    ActiveSheet.PivotTables("PivotTable2").AddDataField ActiveSheet.PivotTables( _
+        "PivotTable2").PivotFields("SOLDQ"), "Count of SOLDQ", xlCount
+    With ActiveSheet.PivotTables("PivotTable2").PivotFields("FMCODE")
+        .Orientation = xlRowField
+        .Position = 1
+    End With
+    Range("L21").Select
+    ActiveSheet.PivotTables("PivotTable2").PivotFields("Count of SOLDQ").Function _
+        = xlSum
+    Columns("A:T").Select
+    Selection.Copy
+    Sheets("COD_SALES").Select
+    Cells.Select
+    Selection.PasteSpecial paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+    Sheets(pivotWS).Select
+    Application.CutCopyMode = False
+    ActiveWindow.SelectedSheets.Delete
+End Sub
