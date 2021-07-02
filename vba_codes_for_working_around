@@ -1,7 +1,7 @@
 Sub fetchSalesData()
 Dim strTargetFile As String
 Dim wb As Workbook
-
+     Sheets("sales_data").Cells.Clear
      Application.ScreenUpdating = False
      Application.DisplayAlerts = False
      strTargetFile = "C:\Users\Asif\Desktop\01-07-21\SALES_DATA\sales_fmtp.xml"
@@ -19,7 +19,7 @@ End Sub
 Sub fetchYesterdayData()
 Dim strTargetFile As String
 Dim wb As Workbook
-
+     Sheets("yesterday").Cells.Clear
      Application.ScreenUpdating = False
      Application.DisplayAlerts = False
      strTargetFile = "C:\Users\Asif\Desktop\01-07-21\SALES_DATA\yesterday.xml"
@@ -36,7 +36,7 @@ End Sub
 Sub fetchCODSales()
 Dim strTargetFile As String
 Dim wb As Workbook
-
+     Sheets("COD_SALES").Cells.Clear
      Application.ScreenUpdating = False
      Application.DisplayAlerts = False
      strTargetFile = "C:\Users\Asif\Desktop\01-07-21\SALES_DATA\17.xml"
@@ -46,11 +46,57 @@ Dim wb As Workbook
      wb.Sheets(1).UsedRange.Copy ThisWorkbook.Sheets("cod").Range("A1")
      wb.Close False
      Application.ScreenUpdating = True
+'
+' createCODpivotTable Macro
+'
+' Keyboard Shortcut: Ctrl+Shift+C
+'
+    lr = Cells(Rows.Count, 1).End(xlUp).Row
+    lc = Cells(1, Columns.Count).End(xlToLeft).Column
 
+    If lr < 2 Or lc < 6 Then
+        MsgBox "Must have data for a Pivot Table"
+        Exit Sub
+    End If
 
+    dataWS = ActiveSheet.Name
+    Sheets.Add
+    pivotWS = ActiveSheet.Name
+        
+    ActiveWorkbook.PivotCaches.Create(SourceType:=xlDatabase, SourceData:= _
+        "'" & dataWS & "'!A1:V" & lr, Version:=6).CreatePivotTable TableDestination:=pivotWS & "!R3C1", _
+        TableName:="PivotTable2", DefaultVersion:=6
+    Sheets(pivotWS).Select
+    Cells(3, 1).Select
+    With ActiveSheet.PivotTables("PivotTable2").PivotFields("B_CODE")
+        .Orientation = xlColumnField
+        .Position = 1
+    End With
+    ActiveSheet.PivotTables("PivotTable2").AddDataField ActiveSheet.PivotTables( _
+        "PivotTable2").PivotFields("SOLDQ"), "Count of SOLDQ", xlCount
+    With ActiveSheet.PivotTables("PivotTable2").PivotFields("FMCODE")
+        .Orientation = xlRowField
+        .Position = 1
+    End With
+    Range("L21").Select
+    ActiveSheet.PivotTables("PivotTable2").PivotFields("Count of SOLDQ").Function _
+        = xlSum
+    Columns("A:T").Select
+    Selection.Copy
+    Worksheets("COD_SALES").Visible = True
+    Sheets("COD_SALES").Select
+    Cells.Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+    Worksheets("COD_SALES").Visible = False
+    Sheets(pivotWS).Select
+    Application.CutCopyMode = False
+    ActiveWindow.SelectedSheets.Delete
+    Sheets("cod").Range("A:V").Clear
 End Sub
 
 Sub ImportSalesFile()
+    Sheets("depot_prod_sales").Cells.Clear
     Dim FileToOpen As Variant
     Dim OpenBook As Workbook
     Dim StartSheet As Worksheet
@@ -60,7 +106,7 @@ Sub ImportSalesFile()
     If FileToOpen <> False Then
         Set OpenBook = Application.Workbooks.Open(FileToOpen)
         OpenBook.Sheets(1).Range("A1:Z200").Copy
-        ThisWorkbook.Worksheets("sales").Range("A1").PasteSpecial xlPasteValues
+        ThisWorkbook.Worksheets("depot_prod_sales").Range("A1").PasteSpecial xlPasteValues
         OpenBook.Close False
         StartSheet.Activate
     End If
@@ -74,12 +120,13 @@ Sub ImportStockFile()
     Dim OpenBook As Workbook
     Dim StartSheet As Worksheet
     Set StartSheet = ActiveSheet
+    Sheets("stock_data").Cells.Clear
     Application.ScreenUpdating = False
     FileToOpen = Application.GetOpenFilename(Title:="Browse for your File & Import Range", fileFilter:="Excel Files (*.txt*),*txt*")
     If FileToOpen <> False Then
         Set OpenBook = Application.Workbooks.Open(FileToOpen)
         OpenBook.Sheets(1).Range("A1:Z450").Copy
-        ThisWorkbook.Worksheets("stock").Range("A1").PasteSpecial xlPasteValues
+        ThisWorkbook.Worksheets("stock_data").Range("A1").PasteSpecial xlPasteValues
         OpenBook.Close False
         
     End If
@@ -93,6 +140,7 @@ Sub ImportZMwiseProductSales()
     Dim OpenBook As Workbook
     Dim StartSheet As Worksheet
     Set StartSheet = ActiveSheet
+    Sheets("zm_wise_product_sales").Cells.Clear
     Application.ScreenUpdating = False
     FileToOpen = Application.GetOpenFilename(Title:="Browse for your File & Import Range", fileFilter:="Excel Files (*.xlsx*),*xlsx")
     If FileToOpen <> False Then
@@ -110,6 +158,18 @@ End Sub
 Sub saveAsXlsx()
     ThisWorkbook.Sheets.Copy
     Application.DisplayAlerts = False
+    Worksheets("sales_data").Visible = False
+    Worksheets("yesterday").Visible = False
+    Worksheets("day_wise_sales_data").Visible = False
+    Worksheets("zm_wise_product_sales").Visible = False
+    Worksheets("stock_data").Visible = False
+    Worksheets("COD_SALES").Visible = False
+    Worksheets("resource").Visible = False
+    Worksheets("data_pull").Visible = False
+    Worksheets("depot_prod_sales").Visible = False
+    Sheets("cod").Select
+    Application.CutCopyMode = False
+    ActiveWindow.SelectedSheets.Delete
     ActiveWorkbook.SaveAs ThisWorkbook.Path & "\" & " " & "Sales Data - " & Format(Date, "mm.dd.yyyy") & ".xlsx", FileFormat:=51
     ActiveWorkbook.Close
 End Sub
